@@ -18,6 +18,7 @@ def crawl(keyword):
     params["user_id"] = account["user_id"]
     params["access_token"] = account["access_token"]
     params["fields"] = "permalink,caption"
+    params["limit"] = "9"
     with open("./hashtag_id.json", 'r') as f:
         hashtag_id = json.load(f)[keyword]
     url = base_url + hashtag_id + "/top_media"
