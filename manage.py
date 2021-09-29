@@ -28,7 +28,7 @@ def crawl(keyword):
     if res.status_code != 200:
         with open("crawl_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
             f.write(res.text)
-        return
+        raise
     posts = res.json()["data"]
 
     if len(posts) == 0:
@@ -134,6 +134,7 @@ def validate_keyword(keyword):
     elif res.status_code != 200:
         with open("validate_keyword_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
             f.write(res.text)
+        raise
 
     hashtag_id = res.json()["data"][0]["id"]
     with open("./hashtag_id.json", "r") as f:
