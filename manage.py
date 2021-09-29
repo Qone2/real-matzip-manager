@@ -53,8 +53,8 @@ def crawl(keyword):
 
     print(datetime.datetime.now())
     for post in reversed(posts):
-        post_id = post["permalink"][28:39]
-        post_url = post["permalink"]
+        post_id = post["permalink"][-12:-1]
+        post_url = post["permalink"][:-12].replace("tv", 'p') + post_id + '/'
         print(post_url)
         img_url = post_url + "media/?size=l"
         print(img_url)
