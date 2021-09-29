@@ -142,7 +142,7 @@ def validate_keyword(keyword):
     hashtag_dict[keyword] = hashtag_id
     with open("./hashtag_id.json", "w") as f:
         json.dump(hashtag_dict, f, indent=2, ensure_ascii=False)
-
+    time.sleep(36)
     return True
 
 
@@ -152,11 +152,11 @@ def fast_crawl():
         for keyword in keyword_list:
             if validate_keyword(keyword):
                 crawl(keyword)
-                time.sleep(2)
+                time.sleep(36)
             else:
                 res = requests.delete("http://127.0.0.1:8000/post/" + keyword + "/dummy")
                 print(res.status_code)
-        time.sleep(2)
+        time.sleep(3)
 
 
 def slow_crawl():
@@ -165,8 +165,8 @@ def slow_crawl():
         for keyword in keyword_list:
             if validate_keyword(keyword):
                 crawl(keyword)
-                time.sleep(18)
-        time.sleep(18)
+                time.sleep(54)
+        time.sleep(54)
 
 
 def main():
