@@ -164,8 +164,8 @@ def slow_crawl():
         for keyword in keyword_list:
             if validate_keyword(keyword):
                 crawl(keyword)
-                time.sleep(54)
-        time.sleep(54)
+                time.sleep(18)
+        time.sleep(18)
 
 
 def main():
