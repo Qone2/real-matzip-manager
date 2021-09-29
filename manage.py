@@ -30,6 +30,7 @@ def crawl(keyword):
             f.write(res.text)
         raise
     posts = res.json()["data"]
+    app_usage: dict = json.loads(res.headers["x-app-usage"])
 
     if len(posts) == 0:
         headers = {
@@ -105,6 +106,9 @@ def crawl(keyword):
         print(res.status_code)
         if res.status_code == 400:
             print(payload)
+    print("id_counter: " + str(id_counter))
+    print(app_usage)
+    return app_usage["total_time"]
 
 
 def validate_keyword(keyword):
@@ -162,11 +166,23 @@ def fast_crawl():
 def slow_crawl():
     while True:
         keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
+        sleep_time = 300
+        prev_usage = 0
         for keyword in keyword_list:
             if validate_keyword(keyword):
-                crawl(keyword)
-                time.sleep(54)
-        time.sleep(54)
+                usage = crawl(keyword)
+                if prev_usage == 0 and usage == 0:
+                    sleep_time -= 1
+                elif prev_usage - usage > 0:
+                    sleep_time -= 1
+                elif prev_usage - usage == 0:
+                    pass
+                elif prev_usage - usage < 0:
+                    sleep_time += 1
+                prev_usage = usage
+                print("sleep " + str(sleep_time) + "secs")
+                time.sleep(sleep_time)
+        time.sleep(3)
 
 
 def main():
