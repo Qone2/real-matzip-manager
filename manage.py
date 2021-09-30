@@ -168,25 +168,38 @@ def fast_scrap():
         time.sleep(3)
 
 
+def slow_scrap_thread(keyword_list: list):
+    sleep_time = 600
+    prev_usage = 0
+    for keyword in keyword_list:
+        if validate_keyword(keyword):
+            usage = scrap(keyword)
+            if prev_usage == 0 and usage == 0:
+                sleep_time -= 1
+            elif prev_usage - usage > 0:
+                sleep_time -= 1
+            elif prev_usage - usage == 0:
+                pass
+            elif prev_usage - usage < 0:
+                sleep_time += 1
+            prev_usage = usage
+            print("sleep " + str(sleep_time) + "secs")
+            time.sleep(sleep_time)
+
+
 def slow_scrap():
     while True:
         keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
-        sleep_time = 300
-        prev_usage = 0
-        for keyword in keyword_list:
-            if validate_keyword(keyword):
-                usage = scrap(keyword)
-                if prev_usage == 0 and usage == 0:
-                    sleep_time -= 1
-                elif prev_usage - usage > 0:
-                    sleep_time -= 1
-                elif prev_usage - usage == 0:
-                    pass
-                elif prev_usage - usage < 0:
-                    sleep_time += 1
-                prev_usage = usage
-                print("sleep " + str(sleep_time) + "secs")
-                time.sleep(sleep_time)
+        keyword_lists = list()
+        threads = list()
+        for i in range(len(keyword_list) // 30 + 1):
+            keyword_lists.append(keyword_list[i * 30:i * 30 + 30])
+        for keyword_list in keyword_lists:
+            thread = threading.Thread(target=slow_scrap_thread, args=(keyword_list, ))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
         time.sleep(3)
 
 
