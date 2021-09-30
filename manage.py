@@ -6,6 +6,8 @@ import json
 import random
 import threading
 
+lock = threading.Lock()
+
 
 def crawl(keyword):
     keyword_list: list = requests.get("http://127.0.0.1:8000/all-keywords").json()["keyword_list"]
@@ -142,11 +144,13 @@ def validate_keyword(keyword):
         raise
 
     hashtag_id = res.json()["data"][0]["id"]
+    lock.acquire()
     with open("./hashtag_id.json", "r") as f:
         hashtag_dict = json.load(f)
     hashtag_dict[keyword] = hashtag_id
     with open("./hashtag_id.json", "w") as f:
         json.dump(hashtag_dict, f, indent=2, ensure_ascii=False)
+    lock.release()
     time.sleep(36)
     return True
 
