@@ -9,7 +9,7 @@ import threading
 lock = threading.Lock()
 
 
-def crawl(keyword):
+def scrap(keyword):
     keyword_list: list = requests.get("http://127.0.0.1:8000/all-keywords").json()["keyword_list"]
     id_counter = keyword_list.index(keyword) // 30
     base_url = "https://graph.facebook.com/v12.0/"
@@ -29,7 +29,7 @@ def crawl(keyword):
     }
     res = requests.get(url, params, headers=headers)
     if res.status_code != 200:
-        with open("crawl_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
+        with open("scrap_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
             f.write(res.text)
         raise
     posts = res.json()["data"]
@@ -155,12 +155,12 @@ def validate_keyword(keyword):
     return True
 
 
-def fast_crawl():
+def fast_scrap():
     while True:
-        keyword_list = requests.get("http://127.0.0.1:8000/not-crawled-yet").json()["keyword_list"]
+        keyword_list = requests.get("http://127.0.0.1:8000/not-scraped-yet").json()["keyword_list"]
         for keyword in keyword_list:
             if validate_keyword(keyword):
-                crawl(keyword)
+                scrap(keyword)
                 time.sleep(36)
             else:
                 res = requests.delete("http://127.0.0.1:8000/post/" + keyword + "/dummy")
@@ -168,14 +168,14 @@ def fast_crawl():
         time.sleep(3)
 
 
-def slow_crawl():
+def slow_scrap():
     while True:
         keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
         sleep_time = 300
         prev_usage = 0
         for keyword in keyword_list:
             if validate_keyword(keyword):
-                usage = crawl(keyword)
+                usage = scrap(keyword)
                 if prev_usage == 0 and usage == 0:
                     sleep_time -= 1
                 elif prev_usage - usage > 0:
@@ -191,8 +191,8 @@ def slow_crawl():
 
 
 def main():
-    threading.Thread(target=fast_crawl).start()
-    threading.Thread(target=slow_crawl).start()
+    threading.Thread(target=fast_scrap).start()
+    threading.Thread(target=slow_scrap).start()
 
 
 if __name__ == "__main__":
