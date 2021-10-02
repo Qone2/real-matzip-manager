@@ -83,7 +83,11 @@ def scrap(keyword):
         for detection in res.json()["response"][0]["detections"]:
             if detection["confidence"] > food_score:
                 food_score = detection["confidence"]
-        post_text = post["caption"]
+        post_text = ""
+        try:
+            post_text = post["caption"]
+        except KeyError:
+            pass
         insta_analysis = ""
         insta_analysis_food = False
         is_ad = False
