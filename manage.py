@@ -36,6 +36,9 @@ def scrap(keyword):
     app_usage: dict = json.loads(res.headers["x-app-usage"])
 
     if len(posts) == 0:
+        keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
+        if keyword in keyword_list:
+            return 0
         headers = {
             'Content-Type': 'application/json'
         }
@@ -53,7 +56,7 @@ def scrap(keyword):
         )
         res = requests.post("http://127.0.0.1:8000/posts", headers=headers, data=payload)
         print(res.status_code)
-        return
+        return 0
 
     print(datetime.datetime.now())
     for post in reversed(posts):
