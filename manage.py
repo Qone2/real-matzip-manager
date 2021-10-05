@@ -195,6 +195,7 @@ def slow_scrap_thread(keyword_list: list):
 
 
 def slow_scrap():
+    rounds = 0
     while True:
         keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
         keyword_lists = list()
@@ -207,7 +208,9 @@ def slow_scrap():
             threads.append(thread)
         for thread in threads:
             thread.join()
+        print("rounds: " + str(rounds))
         time.sleep(3)
+        rounds += 1
 
 
 def main():
