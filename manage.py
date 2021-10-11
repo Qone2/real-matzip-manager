@@ -14,14 +14,14 @@ def scrap(keyword):
     id_counter = keyword_list.index(keyword) // 30
     base_url = "https://graph.facebook.com/v12.0/"
     params = dict()
-    with open("./graph_api_secret.json", 'r') as f:
+    with open("./graph_api_secret.json", 'r', encoding="UTF8") as f:
         account_info = json.load(f)
     account = account_info["accounts"][id_counter]
     params["user_id"] = account["user_id"]
     params["access_token"] = account["access_token"]
     params["fields"] = "permalink,caption"
     params["limit"] = "9"
-    with open("./hashtag_id.json", 'r') as f:
+    with open("./hashtag_id.json", 'r', encoding="UTF8") as f:
         hashtag_id = json.load(f)[keyword]
     url = base_url + hashtag_id + "/top_media"
     headers = {
@@ -29,7 +29,7 @@ def scrap(keyword):
     }
     res = requests.get(url, params, headers=headers)
     if res.status_code != 200:
-        with open("scrap_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
+        with open("scrap_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
         raise
     posts = res.json()["data"]
@@ -79,7 +79,7 @@ def scrap(keyword):
         })
         res = requests.post("http://127.0.0.1:5000/detections/by-url-list", headers=headers, data=payload)
         if res.status_code != 200:
-            with open("object_detection_error" + str(datetime.datetime.now()) + ".txt", 'w') as f:
+            with open("object_detection_error" + str(datetime.datetime.now()) + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
             continue
         food_score = 0.0
@@ -124,13 +124,13 @@ def scrap(keyword):
 def validate_keyword(keyword):
     if "맛집" not in keyword:
         return False
-    with open("./hashtag_id.json", "r") as f:
+    with open("./hashtag_id.json", "r", encoding="UTF8") as f:
         hashtag_dict: dict = json.load(f)
     if hashtag_dict.get(keyword) is not None:
         return True
     url = "https://graph.facebook.com/v12.0/ig_hashtag_search"
     params = dict()
-    with open("./graph_api_secret.json", 'r') as f:
+    with open("./graph_api_secret.json", 'r', encoding="UTF8") as f:
         account_info = json.load(f)
     keyword_list = requests.get("http://127.0.0.1:8000/all-keywords").json()["keyword_list"]
     id_counter = keyword_list.index(keyword) // 30
@@ -146,16 +146,16 @@ def validate_keyword(keyword):
     if res.status_code == 400:
         return False
     elif res.status_code != 200:
-        with open("validate_keyword_server_error" + str(datetime.datetime.now()) + ".html", 'w') as f:
+        with open("validate_keyword_server_error" + str(datetime.datetime.now()) + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
         raise
 
     hashtag_id = res.json()["data"][0]["id"]
     lock.acquire()
-    with open("./hashtag_id.json", "r") as f:
+    with open("./hashtag_id.json", "r", encoding="UTF8") as f:
         hashtag_dict = json.load(f)
     hashtag_dict[keyword] = hashtag_id
-    with open("./hashtag_id.json", "w") as f:
+    with open("./hashtag_id.json", "w", encoding="UTF8") as f:
         json.dump(hashtag_dict, f, indent=2, ensure_ascii=False)
     lock.release()
     time.sleep(36)
