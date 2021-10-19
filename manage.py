@@ -214,8 +214,10 @@ def slow_scrap():
 
 
 def main():
-    threading.Thread(target=fast_scrap).start()
-    threading.Thread(target=slow_scrap).start()
+    thread0 = threading.Thread(target=fast_scrap, name="thread0")
+    thread0.start()
+    thread1 = threading.Thread(target=slow_scrap, name="thread1")
+    thread1.start()
 
 
 if __name__ == "__main__":
