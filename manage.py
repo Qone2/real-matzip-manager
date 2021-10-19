@@ -29,7 +29,7 @@ def scrap(keyword):
     }
     res = requests.get(url, params, headers=headers)
     if res.status_code != 200:
-        with open("scrap_insta_server_error" + str(datetime.datetime.now()) + ".html", 'w', encoding="UTF8") as f:
+        with open("scrap_insta_server_error" + str(datetime.datetime.now()).replace(':', '.') + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
         raise
     posts = res.json()["data"]
@@ -79,7 +79,7 @@ def scrap(keyword):
         })
         res = requests.post("http://127.0.0.1:5000/detections/by-url-list", headers=headers, data=payload)
         if res.status_code != 200:
-            with open("object_detection_error" + str(datetime.datetime.now()) + ".txt", 'w', encoding="UTF8") as f:
+            with open("object_detection_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
             continue
         food_score = 0.0
@@ -146,7 +146,7 @@ def validate_keyword(keyword):
     if res.status_code == 400:
         return False
     elif res.status_code != 200:
-        with open("validate_keyword_server_error" + str(datetime.datetime.now()) + ".html", 'w', encoding="UTF8") as f:
+        with open("validate_keyword_server_error" + str(datetime.datetime.now()).replace(':', '.') + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
         raise
 
