@@ -5,6 +5,7 @@ import datetime
 import json
 import random
 import threading
+import os
 
 lock = threading.Lock()
 
@@ -31,7 +32,7 @@ def scrap(keyword):
     if res.status_code != 200:
         with open("scrap_insta_server_error" + str(datetime.datetime.now()).replace(':', '.') + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
-        raise
+        os._exit(0)
     posts = res.json()["data"]
     app_usage: dict = json.loads(res.headers["x-app-usage"])
 
@@ -148,7 +149,7 @@ def validate_keyword(keyword):
     elif res.status_code != 200:
         with open("validate_keyword_server_error" + str(datetime.datetime.now()).replace(':', '.') + ".html", 'w', encoding="UTF8") as f:
             f.write(res.text)
-        raise
+        os._exit(0)
 
     hashtag_id = res.json()["data"][0]["id"]
     lock.acquire()
