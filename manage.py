@@ -82,7 +82,7 @@ def scrap(keyword):
         if res.status_code != 200:
             with open("object_detection_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
-            continue
+            os._exit(0)
         food_score = 0.0
         for detection in res.json()["response"][0]["detections"]:
             if detection["confidence"] > food_score:
