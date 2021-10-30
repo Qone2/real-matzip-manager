@@ -70,15 +70,29 @@ def scrap(keyword):
         if requests.get(
                 "http://127.0.0.1:8000/post/" + keyword + '/' + post_id).status_code == 200:
             continue
+
         headers = {
-            'Content-Type': 'application/json'
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
         }
-        payload = json.dumps({
-            "images": [
-                img_url
-            ]
-        })
-        res = requests.post("http://127.0.0.1:5000/detections/by-url-list", headers=headers, data=payload)
+        lock.acquire()
+        time.sleep(1)
+        res = requests.get(img_url, headers=headers)
+        lock.release()
+
+        if "image" not in res.headers["content-type"]:
+            with open("image_open_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
+                f.write(post_url + '\n' + img_url + '\n' + keyword)
+            os._exit(0)
+
+        if not os.path.exists("F:/nginx/html/" + keyword):
+            os.makedirs("F:/nginx/html/" + keyword)
+
+        with open("F:/nginx/html/" + keyword + '/' + post_id + ".jpg", "wb") as f:
+            f.write(res.content)
+
+
+        files=[('images', (post_id + '.jpg', open('F:/nginx/html/' + keyword + '/' + post_id + '.jpg','rb'), 'image/jpeg'))]
+        res = requests.post("http://127.0.0.1:5000/detections/by-image-files", files=files)
         if res.status_code != 200:
             with open("object_detection_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
