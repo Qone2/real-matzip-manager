@@ -11,7 +11,7 @@ lock = threading.Lock()
 
 
 def scrap(keyword):
-    keyword_list: list = requests.get("http://127.0.0.1:8000/all-keywords").json()["keyword_list"]
+    keyword_list: list = requests.get("http://127.0.0.1:8443/all-keywords").json()["keyword_list"]
     id_counter = keyword_list.index(keyword) // 30
     base_url = "https://graph.facebook.com/v12.0/"
     params = dict()
@@ -36,8 +36,10 @@ def scrap(keyword):
     posts = res.json()["data"]
     app_usage: dict = json.loads(res.headers["x-app-usage"])
 
+    # 해시태그는 있으나 정작 내용은 없는 경우, 더미 게시글을 하나 더 포스트해서 스크랩되지 않은 목록에서 제외한다.
+    # 스크랩되지 않은 키워드 목록은 게시글 수가 1개만 있는 경우에 해당한다.
     if len(posts) == 0:
-        keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
+        keyword_list = requests.get("http://127.0.0.1:8443/keywords").json()["keyword_list"]
         if keyword in keyword_list:
             return 0
         headers = {
@@ -55,7 +57,7 @@ def scrap(keyword):
                 "is_ad": False
             }
         )
-        res = requests.post("http://127.0.0.1:8000/posts", headers=headers, data=payload)
+        res = requests.post("http://127.0.0.1:8443/posts", headers=headers, data=payload)
         print(res.status_code)
         return 0
 
@@ -68,7 +70,7 @@ def scrap(keyword):
         print(img_url)
         print(keyword)
         if requests.get(
-                "http://127.0.0.1:8000/post/" + keyword + '/' + post_id).status_code == 200:
+                "http://127.0.0.1:8443/post/" + keyword + '/' + post_id).status_code == 200:
             continue
 
         headers = {
@@ -127,7 +129,7 @@ def scrap(keyword):
                 "is_ad": is_ad
             }
         )
-        res = requests.post("http://127.0.0.1:8000/posts", headers=headers, data=payload)
+        res = requests.post("http://127.0.0.1:8443/posts", headers=headers, data=payload)
         print(res.status_code)
         if res.status_code == 400:
             print(payload)
@@ -147,7 +149,7 @@ def validate_keyword(keyword):
     params = dict()
     with open("./graph_api_secret.json", 'r', encoding="UTF8") as f:
         account_info = json.load(f)
-    keyword_list = requests.get("http://127.0.0.1:8000/all-keywords").json()["keyword_list"]
+    keyword_list = requests.get("http://127.0.0.1:8443/all-keywords").json()["keyword_list"]
     id_counter = keyword_list.index(keyword) // 30
     account = account_info["accounts"][id_counter]
     params["user_id"] = account["user_id"]
@@ -179,13 +181,17 @@ def validate_keyword(keyword):
 
 def fast_scrap():
     while True:
-        keyword_list = requests.get("http://127.0.0.1:8000/not-scraped-yet").json()["keyword_list"]
+        try:
+            keyword_list = requests.get("http://127.0.0.1:8443/not-scraped-yet").json()["keyword_list"]
+        except:
+            time.sleep(3)
+            continue
         for keyword in keyword_list:
             if validate_keyword(keyword):
                 scrap(keyword)
                 time.sleep(36)
             else:
-                res = requests.delete("http://127.0.0.1:8000/post/" + keyword + "/dummy")
+                res = requests.delete("http://127.0.0.1:8443/post/" + keyword + "/dummy")
                 print(res.status_code)
         time.sleep(3)
 
@@ -212,7 +218,7 @@ def slow_scrap_thread(keyword_list: list):
 def slow_scrap():
     rounds = 0
     while True:
-        keyword_list = requests.get("http://127.0.0.1:8000/keywords").json()["keyword_list"]
+        keyword_list = requests.get("http://127.0.0.1:8443/keywords").json()["keyword_list"]
         keyword_lists = list()
         threads = list()
         for i in range(len(keyword_list) // 30 + 1):
