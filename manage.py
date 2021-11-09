@@ -78,7 +78,10 @@ def scrap(keyword):
         }
         lock.acquire()
         time.sleep(1)
-        res = requests.get(img_url, headers=headers)
+        try:
+            res = requests.get(img_url, headers=headers)
+        except:
+            os._exit(0)
         lock.release()
 
         if "image" not in res.headers["content-type"]:
