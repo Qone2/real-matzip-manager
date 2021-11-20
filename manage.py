@@ -7,6 +7,8 @@ import random
 import threading
 import os
 
+from ip_change import ip_change
+
 lock = threading.Lock()
 
 
@@ -77,17 +79,20 @@ def scrap(keyword):
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
         }
         lock.acquire()
-        time.sleep(1)
+        time.sleep(1 + random.uniform(-0.5, 0.5))
         try:
             res = requests.get(img_url, headers=headers)
         except:
             os._exit(0)
-        lock.release()
 
         if "image" not in res.headers["content-type"]:
             with open("image_open_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
-            os._exit(0)
+            ip_change()
+            print(">>>> ip changed")
+            lock.release()
+            continue
+        lock.release()
 
         if not os.path.exists("F:/nginx/html/" + keyword):
             os.makedirs("F:/nginx/html/" + keyword)
