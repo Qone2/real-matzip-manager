@@ -67,6 +67,7 @@ def scrap(keyword):
     for post in reversed(posts):
         post_id = post["permalink"][-12:-1]
         post_url = post["permalink"][:-12].replace("tv", 'p') + post_id + '/'
+        posted_date = post["timestamp"]
         print(post_url)
         img_url = post_url + "media/?size=l"
         print(img_url)
@@ -102,7 +103,7 @@ def scrap(keyword):
 
 
         files=[('images', (post_id + '.jpg', open('F:/nginx/html/' + keyword + '/' + post_id + '.jpg','rb'), 'image/jpeg'))]
-        res = requests.post("http://127.0.0.1:5000/detections/by-image-files", files=files)
+        res = requests.post("http://127.0.0.1:5050/detections/by-image-files", files=files)
         if res.status_code != 200:
             with open("object_detection_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
@@ -132,6 +133,7 @@ def scrap(keyword):
                 "keyword": keyword,
                 "food_score": food_score,
                 "post_text": post_text,
+                "posted_date": posted_date,
                 "insta_analysis": insta_analysis,
                 "insta_analysis_food": insta_analysis_food,
                 "is_ad": is_ad
