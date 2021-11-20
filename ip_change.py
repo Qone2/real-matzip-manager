@@ -1,5 +1,3 @@
-import selenium.common.exceptions
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
@@ -16,10 +14,10 @@ import datetime
 import random
 import threading
 
+chrome_option = Options()
+chrome_option.add_argument("headless")
 
 def ip_change():
-    chrome_option = Options()
-    # chrome_option.add_argument("headless")
 
     driver = webdriver.Chrome(executable_path="./chromedriver.exe")
 
@@ -63,4 +61,4 @@ def change_mac_addr(driver:WebDriver):
 
 if __name__ == "__main__":
     ip_change()
-    time.sleep(1000)
+    print("ip changed")
