@@ -83,8 +83,11 @@ def scrap(keyword):
         time.sleep(1 + random.uniform(-0.5, 0.5))
         try:
             res = requests.get(img_url, headers=headers)
-        except:
-            os._exit(0)
+        except Exception as e:
+            with open("page_request_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
+                f.write(post_url + '\n' + img_url + '\n' + keyword + '\n' + str(e.__class__) + '\n' + str(e))
+            lock.release()
+            continue
 
         if "image" not in res.headers["content-type"]:
             with open("image_open_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
