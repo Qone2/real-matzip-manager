@@ -22,11 +22,11 @@ def scrap(keyword):
     account = account_info["accounts"][id_counter]
     params["user_id"] = account["user_id"]
     params["access_token"] = account["access_token"]
-    params["fields"] = "permalink,caption"
-    params["limit"] = "9"
+    params["fields"] = "permalink,caption,timestamp"
+    params["limit"] = "50"
     with open("./hashtag_id.json", 'r', encoding="UTF8") as f:
         hashtag_id = json.load(f)[keyword]
-    url = base_url + hashtag_id + "/top_media"
+    url = base_url + hashtag_id + "/recent_media"
     headers = {
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
     }
