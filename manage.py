@@ -210,7 +210,7 @@ def fast_scrap():
 
 
 def slow_scrap_thread(keyword_list: list):
-    sleep_time = 1800
+    sleep_time = 75  # 75 ~ 2400
     prev_usage = 0
     for keyword in keyword_list:
         if validate_keyword(keyword):
