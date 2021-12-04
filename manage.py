@@ -13,8 +13,15 @@ lock = threading.Lock()
 
 
 def scrap(keyword):
+    """
+    메인 스크랩 함수.
+    키워드(해시태그)를 받아 스크랩작업을 한다.
+    """
+    # 몇번째로 등록된 키워드인지 파악하여 몇번째 계정으로 instagram graph api 에 접속할 것인지 파악
     keyword_list: list = requests.get("http://127.0.0.1:8443/all-keywords").json()["keyword_list"]
     id_counter = keyword_list.index(keyword) // 30
+
+    # instagram graph api 쿼리
     base_url = "https://graph.facebook.com/v12.0/"
     params = dict()
     with open("./graph_api_secret.json", 'r', encoding="UTF8") as f:
@@ -24,6 +31,7 @@ def scrap(keyword):
     params["access_token"] = account["access_token"]
     params["fields"] = "permalink,caption,timestamp"
     params["limit"] = "50"
+    # 해시태그 고유 id 필요
     with open("./hashtag_id.json", 'r', encoding="UTF8") as f:
         hashtag_id = json.load(f)[keyword]
     url = base_url + hashtag_id + "/recent_media"
@@ -63,6 +71,7 @@ def scrap(keyword):
         print(res.status_code)
         return 0
 
+    # 스크랩 과정
     print(datetime.datetime.now())
     for post in reversed(posts):
         post_id = post["permalink"][-12:-1]
@@ -72,6 +81,8 @@ def scrap(keyword):
         img_url = post_url + "media/?size=l"
         print(img_url)
         print(keyword)
+
+        # 이미 있는 포스트면 제외
         if requests.get(
                 "http://127.0.0.1:8443/post/" + keyword + '/' + post_id).status_code == 200:
             continue
@@ -79,6 +90,8 @@ def scrap(keyword):
         headers = {
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
         }
+
+        # 인스타그램 포스트 미디어주소를 통해 사진을 다운받는 과정. 스레드마다 텀을 두어 요청한다.
         lock.acquire()
         time.sleep(1 + random.uniform(-0.5, 0.5))
         try:
@@ -89,6 +102,7 @@ def scrap(keyword):
             lock.release()
             continue
 
+        # ip 변경
         if "image" not in res.headers["content-type"]:
             with open("image_open_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
                 f.write(post_url + '\n' + img_url + '\n' + keyword)
@@ -98,14 +112,14 @@ def scrap(keyword):
             continue
         lock.release()
 
+        # 사진파일 저장 nginx 나 apache 또는 static 폴더에 저장
         if not os.path.exists("F:/nginx/html/" + keyword):
             os.makedirs("F:/nginx/html/" + keyword)
-
         with open("F:/nginx/html/" + keyword + '/' + post_id + ".jpg", "wb") as f:
             f.write(res.content)
 
-
-        files=[('images', (post_id + '.jpg', open('F:/nginx/html/' + keyword + '/' + post_id + '.jpg','rb'), 'image/jpeg'))]
+        # Object detection 서버에 detection 요청
+        files = [('images', (post_id + '.jpg', open('F:/nginx/html/' + keyword + '/' + post_id + '.jpg','rb'), 'image/jpeg'))]
         res = requests.post("http://127.0.0.1:5050/detections/by-image-files", files=files)
         if res.status_code != 200:
             with open("object_detection_error" + str(datetime.datetime.now()).replace(':', '.') + ".txt", 'w', encoding="UTF8") as f:
@@ -142,6 +156,7 @@ def scrap(keyword):
                 "is_ad": is_ad
             }
         )
+        # 메인 api 서버에 포스트 저장
         res = requests.post("http://127.0.0.1:8443/posts", headers=headers, data=payload)
         print(res.status_code)
         if res.status_code == 400:
@@ -152,6 +167,11 @@ def scrap(keyword):
 
 
 def validate_keyword(keyword):
+    """
+    키워드(string)가 유효한지 파악하여 true false 리턴
+    '유효' 하다는 뜻은 우선 키워드에 '맛집' 이라는 단어가 포함되어 있어야 하고,
+    instagram graph api 에서 해시태그 id가 존재하는 키워드 이어야 한다.
+    """
     if "맛집" not in keyword:
         return False
     with open("./hashtag_id.json", "r", encoding="UTF8") as f:
@@ -193,6 +213,11 @@ def validate_keyword(keyword):
 
 
 def fast_scrap():
+    """
+    더 빠른 스크랩을 위한 함수.
+    아직 스크랩되지 않은 키워드를 주기적으로 메인 api 서버로 쿼리하고,
+    존재한다면 스크랩을 진행한다.
+    """
     while True:
         try:
             keyword_list = requests.get("http://127.0.0.1:8443/not-scraped-yet").json()["keyword_list"]
@@ -210,6 +235,10 @@ def fast_scrap():
 
 
 def slow_scrap_thread(keyword_list: list):
+    """
+    느린 스크랩을 하기 위한 하나의 쓰레드 함수.
+    쪼개진 키워드 리스트를 받아 스크랩 함수를 실행한다.
+    """
     sleep_time = 75  # 75 ~ 2400
     prev_usage = 0
     for keyword in keyword_list:
@@ -229,6 +258,12 @@ def slow_scrap_thread(keyword_list: list):
 
 
 def slow_scrap():
+    """
+    느린 스크랩을 위한 함수.
+    메인 api 서버로부터 해시태그 목록을 받아 30개 단위로 나눈 후,
+    (30개 단위로 나누는 이유는 각 instagram graph api 계정마다 쿼리할 수 있는 해시태그 종류가 최대 30개 이기떄문)
+    느린 속도로 스크랩을 진행한다.
+    """
     rounds = 0
     while True:
         keyword_list = requests.get("http://127.0.0.1:8443/keywords").json()["keyword_list"]

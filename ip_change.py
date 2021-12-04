@@ -17,8 +17,12 @@ import threading
 chrome_option = Options()
 chrome_option.add_argument("headless")
 
-def ip_change():
 
+def ip_change():
+    """
+    ASUS 라우터 설정페이지 진입하여
+    mac 주소 변경
+    """
     driver = webdriver.Chrome(executable_path="./chromedriver.exe")
 
     driver.get("http://192.168.0.1")
@@ -42,7 +46,13 @@ def ip_change():
         pass
     time.sleep(10)
 
-def change_mac_addr(driver:WebDriver):
+
+def change_mac_addr(driver: WebDriver):
+    """
+    랜덤값으로 mac 주소 변경
+    :param driver: 
+    크롬 드라이버
+    """
     mac_addr = driver.find_element(By.NAME, "wan_hwaddr_x")
     for _ in range(17):
         time.sleep(0.1)
@@ -56,7 +66,6 @@ def change_mac_addr(driver:WebDriver):
             key = chr(key_ascii + 39)
         mac_addr.send_keys(key)
     driver.find_element(By.XPATH, "/html/body/form[2]/table/tbody/tr/td[3]/div/table/tbody/tr/td/table/tbody/tr/td/div[7]/input").click()
-
 
 
 if __name__ == "__main__":
