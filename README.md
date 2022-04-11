@@ -1,4 +1,4 @@
-# Real Matzip API
+# Real Matzip Manager
 진짜맛집 프로젝트의 메니지먼트 서버.
 https://github.com/Qone2/real-matzip-api, https://github.com/Qone2/YOLOv4-Object-Detection-API-Server 두 서버와 연계되어 작동하며
 인스타그램 공식 api를 통해 해시태그 에 대한 포스트들을 검색하고 포스트내용을 스크랩하며, 포스트마다 고유한 미디어 주소를 통해 사진을 스크랩하여 저장합니다. <br>
